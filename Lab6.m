@@ -107,12 +107,43 @@ ledpa = pavg(lowerEighteenDegP);
 
 %% 8. Model the Airfoil as a Flat Plate, Estimate Skin Friction
 % See equation 9.34 from the fluids book to make this estimate
+v = 1.568e-5; %m^2/s, kinematic viscosity of air at 300 K from engineering toolbox
+ReL = vel*.15/v; %using a Reynold's number for laminar flow because Gross said so
 
+cDcalc = .0742/((ReL)^.2);
+crossA = .15*.3; %m^2, modeling the airfoil as a plate, the reference area is the surface area of the plate
+FskinDrag = 1*(.5*rho*(vel^2)*crossA*cDcalc); %this gets multiplied by two since there are two sides to the airfoil
 
+%% 9. Estimate and Tabulate Induced Drag as a Function of Angle of Attack
+Sigma = .7; %this is an efficiency factor, we are using this value because it was given in the slides
+AR = 2; %this is the aspect ratio of the wing, 2:1 in this case
+CDI = (cL.^2)./(pi*AR*Sigma); %note that the cL values are different for every angle of attack, therefor the Induced Drag coefficient is as well
+FIndDrag = 1*(.5*rho*(vel^2)*crossA.*CDI); %calculating induced drag
 
+%% 10. Estimate and Tabulate Form Drag as a Function of Angle of Attack
+%this part uses the results of 7.a
+%the existing points will be interpolated to have values at more angles
 
+%% 11. Plot: Estimaated Skin Drag, Estimated Induced Drag, Estimated Form Drag, and Measured Drag as a Function of Angle of Attack
+FSDE = ones(11,1).*FskinDrag; %creating an array of estimated skin drags since they are the same at all angles
+FIDE = FIndDrag; %renaming to make it easier to plot
+FFDE = [zerodegfx; ninedegfx; eighteendegfx]; %making an array of the estimated form drags
+FFDM = D; %making an array of the measured form drags (bad data!). This drag array is longer than the others
+Angles11 = aoat; %creating the larger angle array so FFDM can be plotted, 11 elements in the matrix
+Angles3 = [0; 9; 18]; %creating the smaller array
 
+figure(3)
+plot(Angles11,FSDE,Angles11,FIDE,Angles3,FFDE,Angles11,FFDM,'--')
+xlabel('Angle of Attack (degrees, where 0° is horizontal)')
+ylabel('Drag Force (N)')
+legend('Estimated Skin Friction Drag','Estimated Induced Drag','Estimated Form Drag','Measured Drag Force','location','northwest')
+grid on
 
+%% 12. At Maximum Lift, Estimate Uncertainty in cL using Truncated Taylor Series
+%uncertainty in lift is .01 N
+%uncertainty in manometer readings is .05 inches of water
+%uncertainty in the planform area id .25 square millimeters
+%uncertainty in air density is .05 kg/m^3
 
 
 

@@ -29,7 +29,11 @@ end
 
 
 xforceaf = sum(upperformdrags)+sum(lowerformdrags); %summing both sides of the airfoil to find drags
-yforceaf = abs(sum(upperlifts)+sum(lowerlifts)); %taking absolute for sign convention
+%the upper side y force is made negative by math convention, the lower side is
+%made positive. The difference is taken as an ablsolute because everything
+%else uses positive numbers and we want this to match. The sign is only
+%convention.
+yforceaf = abs(sum(upperlifts)+sum(lowerlifts)); %taking absolute for sign convention (manometer is measuring negative pressure!)
 
 xforce = yforceaf.*sind(alpha)-xforceaf.*cosd(alpha);
 yforce = yforceaf.*cosd(alpha)+xforceaf.*sind(alpha);
