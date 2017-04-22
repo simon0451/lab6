@@ -50,7 +50,7 @@ aoat = Table2(:,1); %the angles of attack in degrees
 
 figure(1)
 plot(aoat,cL,aoat,cD)
-title('Lift and Drag Coefficients as a Function of Airfoil Angle')
+% title('Lift and Drag Coefficients as a Function of Airfoil Angle')
 xlabel('Angle of Attack (degrees, where 0° is horizontal)')
 ylabel('Lift or Drag Coefficient')
 legend('Coefficient of Lift','Coefficient of Drag','location','southeast')
@@ -61,9 +61,9 @@ C = cL./cD; %finding the lift to drag ratio of the airfoil with lift and drag co
 
 figure(2)
 plot(aoat,C)
-title('Lift to Drag Ratio vs. Airfoil Angle')
+% title('Lift to Drag Ratio vs. Airfoil Angle')
 xlabel('Angle of Attack (degrees, where 0° is horizontal)')
-ylabel('C')
+ylabel('Lift to Drag Ratio, C')
 ymin = -10;
 ymax = 18;
 xmin = -10;
@@ -112,7 +112,7 @@ ReL = vel*.15/v; %using a Reynold's number for laminar flow because Gross said s
 
 cDcalc = .0742/((ReL)^.2);
 crossA = .15*.3; %m^2, modeling the airfoil as a plate, the reference area is the surface area of the plate
-FskinDrag = 1*(.5*rho*(vel^2)*crossA*cDcalc); %this gets multiplied by two since there are two sides to the airfoil
+FskinDrag = 2*(.5*rho*(vel^2)*crossA*cDcalc); %this gets multiplied by two since there are two sides to the airfoil
 
 %% 9. Estimate and Tabulate Induced Drag as a Function of Angle of Attack
 Sigma = .7; %this is an efficiency factor, we are using this value because it was given in the slides
@@ -122,9 +122,8 @@ FIndDrag = 1*(.5*rho*(vel^2)*crossA.*CDI); %calculating induced drag
 
 %% 10. Estimate and Tabulate Form Drag as a Function of Angle of Attack
 %this part uses the results of 7.a
-%the existing points will be interpolated to have values at more angles
 
-%% 11. Plot: Estimaated Skin Drag, Estimated Induced Drag, Estimated Form Drag, and Measured Drag as a Function of Angle of Attack
+%% 11. Plot: Estimated Skin Drag, Estimated Induced Drag, Estimated Form Drag, and Measured Drag as a Function of Angle of Attack
 FSDE = ones(11,1).*FskinDrag; %creating an array of estimated skin drags since they are the same at all angles
 FIDE = FIndDrag; %renaming to make it easier to plot
 FFDE = [zerodegfx; ninedegfx; eighteendegfx]; %making an array of the estimated form drags
@@ -139,13 +138,39 @@ ylabel('Drag Force (N)')
 legend('Estimated Skin Friction Drag','Estimated Induced Drag','Estimated Form Drag','Measured Drag Force','location','northwest')
 grid on
 
+% taking values at 0 deg. 9 deg. and 18 deg. to compare with the measured values
+FSDE3 = [FSDE(4); FSDE(7); FSDE(10)]; %estimated skin friction drag
+FIDE3 = [FIDE(4); FIDE(7); FIDE(10)]; %estimated induced drag
+FFDE3 = FFDE; %estimated form drag (already a 3 element array)
+FFDM3 = [FFDM(4); FFDM(7); FFDM(10)]; %the measured data, for the three angles we are concerned with
+FDE = FSDE3+FIDE3+FFDE3; %total estimated drag force (summing all estimated drag values)
+
+figure(4)
+plot(Angles3,FDE,Angles3,FFDM3)
+xlabel('Angle of Attack (degrees, where 0° is horizontal)')
+ylabel('Drag Force (N)')
+legend('Estimated Total Drag','Measured Total Drag')
+
 %% 12. At Maximum Lift, Estimate Uncertainty in cL using Truncated Taylor Series
 %uncertainty in lift is .01 N
-%uncertainty in manometer readings is .05 inches of water
+UFL = .01;
 %uncertainty in the planform area id .25 square millimeters
-%uncertainty in air density is .05 kg/m^3
+UA = 2.5e-7; %CONVERTING TO SQUARE METERS
+%uncertainty in air density is .05 kg/m^3 (Pa)
+Urho = .05;
+%uncertainty in manometer readings is .05 inches of water
+%this is equal to 12.442 Pa using the previously mentioned conversion factor
+UP = 12.442; %pressure uncertainty, Pascals
+UVEL = vel*sqrt(((UP*sqrt(2))/(2*dynP))^2+(Urho/(-rho))^2); %calculating velocity uncertainty from pressure and density uncertainty
 
+FL = Table2(9,2); %this is the maximum lift, produced at 15 degrees angle of attack
+%rho was calculated earlier
+%velocity was calulated earlier
+A = .3*.15; %planform area
+CL = FL/(.5*rho*(vel^2)*A); %removed from the square root because this figure is squared in every term
 
+UCLCL = sqrt(((UFL/FL)^2)+((Urho/(-rho))^2)+(((-2*UVEL)/vel)^2)+((UA/-A)^2)); %relative vs. absolute error, we want a percentage
+CLpercentError = UCLCL*100;
 
 
 
